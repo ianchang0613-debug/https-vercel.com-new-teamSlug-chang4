@@ -5,16 +5,25 @@ export default async function handler(req, res) {
     }
 
     const apiKey = process.env.OPENAI_API_KEY;
-
     if (!apiKey) {
       return res.status(500).json({ error: "OPENAI_API_KEY not set" });
     }
 
-    const { text } = req.body || {};
+    let body = req.body;
 
+    if (typeof body === "string") {
+      try {
+        body = JSON.parse(body);
+      } catch (e) {
+        return res.status(400).json({ error: "Invalid JSON body" });
+      }
+    }
+
+    const text = body?.text;
     if (!text || typeof text !== "string") {
       return res.status(400).json({ error: "text is required" });
     }
+
 
     const systemPrompt = `
 const systemPrompt = `
@@ -138,14 +147,8 @@ const systemPrompt = `
         model: "gpt-4o-mini",
         temperature: 0.6,
         messages: [
-          {
-            role: "system",
-            content: systemPrompt
-          },
-          {
-            role: "user",
-            content: text
-          }
+          { role: "system", content: systemPrompt },
+          { role: "user", content: text }
         ]
       })
     });
@@ -153,14 +156,17 @@ const systemPrompt = `
     const data = await response.json();
 
     if (!response.ok) {
-      return res.status(response.status).json(data);
+      return res.status(response.status).json({
+        error: "OpenAI API error",
+        detail: data
+      });
     }
 
     return res.status(200).json(data);
   } catch (error) {
     return res.status(500).json({
       error: "server error",
-      detail: String(error)
+      detail: error?.message || String(error)
     });
   }
 }
