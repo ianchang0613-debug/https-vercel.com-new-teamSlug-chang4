@@ -46,6 +46,11 @@ button{
 <div id="result"></div>
 
 <script>
+  
+function getByteLength(str) {
+  return new TextEncoder().encode(str).length;
+}
+
 const bannedWords = [
 "100%","99%","99.9","FDA","FDA인증","HACCP","MAGICBLOCK","가려움완화","가장","간염",
 "갈증해소","감기","갱년기","건강증진","건선","검버섯","경락","경옥고","경옥보","경옥정",
@@ -110,9 +115,12 @@ function cleanResult(content) {
         .replace(/\b특가\b/g, "")
         .replace(/\s{2,}/g, " ")
         .trim()
-    )
-    .filter(line => getByteLength(line) >= 50)
-.join("\n");
+   )
+  .filter(line => {
+    const byte = getByteLength(line);
+    return byte >= 50 && byte <= 65;
+  })
+  .join("\n");
 
   return cleaned;
 }
