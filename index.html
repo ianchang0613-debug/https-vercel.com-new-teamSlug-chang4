@@ -82,8 +82,30 @@ ${input}
       return;
     }
 
-    const content = data?.choices?.[0]?.message?.content || "결과가 없습니다.";
-    resultBox.innerText = content;
+ const content = data?.choices?.[0]?.message?.content || "결과가 없습니다.";
+
+const cleaned = content
+  .split("\n")
+  .map(line => line.trim())
+  .filter(Boolean)
+  .map(line =>
+    line
+      .replace(/\b1EA\b/gi, "")
+      .replace(/\b1P\b/gi, "")
+      .replace(/\b1개\b/g, "")
+      .replace(/\b한개\b/g, "")
+      .replace(/\b단품\b/g, "")
+      .replace(/\b낱개\b/g, "")
+      .replace(/\b무료배송\b/g, "")
+      .replace(/\b추천\b/g, "")
+      .replace(/\b인기\b/g, "")
+      .replace(/\b특가\b/g, "")
+      .replace(/\s{2,}/g, " ")
+      .trim()
+  )
+  .join("\n");
+
+resultBox.innerText = cleaned;
   } catch (error) {
     resultBox.innerText = "실행 오류: " + error.message;
   }
