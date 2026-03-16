@@ -147,17 +147,10 @@ async function generateSingle(line) {
   const prompt = `
 아래 입력값 1개에 대해서만 상품명을 가공해줘.
 
-중요 규칙
-- 입력 1개당 출력도 반드시 1개만 한다
-- 상품명만 출력한다
+규칙
+- 입력 1개당 출력 1개
+- 상품명만 출력
 - 설명문 금지
-- 입력값과 동일하거나 지나치게 유사한 표현 금지
-- 타겟 키워드 포함
-- 사용 상황 키워드 포함
-- 같은 단어 3번 이상 금지
-- 상품명은 엑셀 LENB 기준 50바이트 이상 65바이트 이하
-- 조건을 만족하지 못하면 삭제하지 말고 다시 작성한다
-- 반드시 최종 결과 1개를 출력한다
 
 입력값
 ${line}
@@ -174,64 +167,18 @@ ${line}
 
     const data = await response.json();
 
-   if (!response.ok) {
-  return "생성실패: " + JSON.stringify(data);
-}
+    if (!response.ok) {
+      return "API에러: " + JSON.stringify(data);
+    }
 
     const content = data?.choices?.[0]?.message?.content || "";
     const cleaned = cleanResult(content);
     const firstLine = cleaned.split("\n").map(v => v.trim()).filter(Boolean)[0] || "";
 
-    if (!firstLine) {
-      return "생성실패";
-    }
-
-    return firstLine;
+    return firstLine || "결과없음";
   } catch (error) {
-    return "생성실패";
+    return "실행에러: " + error.message;
   }
-}
-
-async function generate() {
-  const input = document.getElementById("input").value.trim();
-  const resultBox = document.getElementById("result");
-
-  if (!input) {
-    resultBox.innerText = "입력값이 없습니다.";
-    return;
-  }
-
-  const lines = input
-    .split("\n")
-    .map(line => line.trim())
-    .filter(Boolean);
-
-  const results = [];
-
-  for (let i = 0; i < lines.length; i++) {
-    resultBox.innerText = `생성 중... ${i}/${lines.length}`;
-    const result = await generateSingle(lines[i]);
-    results.push(result);
-  }
-
-  resultBox.innerText = results.join("\n");
-}
-
-function copyResult() {
-  const resultText = document.getElementById("result").innerText.trim();
-
-  if (!resultText) {
-    alert("복사할 결과가 없습니다.");
-    return;
-  }
-
-  navigator.clipboard.writeText(resultText)
-    .then(() => {
-      alert("결과를 복사했습니다.");
-    })
-    .catch(() => {
-      alert("복사에 실패했습니다.");
-    });
 }
 </script>
 
