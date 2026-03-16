@@ -116,12 +116,12 @@ function cleanResult(content) {
     cleaned = cleaned.replace(regex, "");
   });
 
-  cleaned = cleaned
-    .split("\n")
-    .map(line => line.trim())
-    .filter(Boolean)
-    .map(line =>
-      line
+ cleaned = cleaned
+  .split("\n")
+  .map(line => line.trim())
+  .filter(Boolean)
+  .map(line =>
+    line
         .replace(/\b1EA\b/gi, "")
         .replace(/\b1P\b/gi, "")
         .replace(/\b1개\b/g, "")
@@ -135,16 +135,14 @@ function cleanResult(content) {
         .replace(/\s{2,}/g, " ")
         .trim()
    )
-  .filter(line => {
-  const byte = getByteLength(line);
-  const triple = hasTripleWord(line);
-  return byte >= 50 && byte <= 65 && !triple;
-})
+.map(line => line.trim())
+.filter(Boolean)
   .join("\n");
 
   return cleaned;
 }
 
+<script>
 async function generate() {
   const input = document.getElementById("input").value.trim();
   const resultBox = document.getElementById("result");
@@ -154,60 +152,67 @@ async function generate() {
     return;
   }
 
-  resultBox.innerText = "생성 중...";
+  const lines = input
+    .split("\n")
+    .map(line => line.trim())
+    .filter(Boolean);
 
-  const prompt = `
-아래 입력값을 기준으로 상품명을 가공해줘.
+  resultBox.innerText = `생성 중... 0/${lines.length}`;
 
-입력 형식
-- 각 줄은 원상품명 | 이미지URL 형식이다
-- 입력 순서를 유지해서 결과를 출력한다
-- 출력은 가공된 상품명만 한 줄에 하나씩 줄바꿈으로 출력한다
+  const results = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    const prompt = `
+아래 입력값 1개에 대해서만 상품명을 가공해줘.
+
+중요 규칙
+- 입력 1개당 출력도 반드시 1개만 한다
+- 상품명만 출력한다
+- 설명문 금지
+- 입력값과 동일하거나 지나치게 유사한 표현 금지
+- 타겟 키워드 포함
+- 사용 상황 키워드 포함
+- 같은 단어 3번 이상 금지
+- 상품명은 엑셀 LENB 기준 50바이트 이상 65바이트 이하
+- 조건을 만족하지 못하면 다시 작성해서 조건에 맞는 결과 1개만 출력
 
 입력값
-${input}
+${line}
 `;
 
-  try {
-    const response = await fetch("/api/generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ text: prompt })
-    });
+    try {
+      const response = await fetch("/api/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ text: prompt })
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      resultBox.innerText = "에러: " + JSON.stringify(data);
-      return;
+      if (!response.ok) {
+        results.push("생성실패");
+      } else {
+        const content = data?.choices?.[0]?.message?.content || "";
+        const cleaned = cleanResult(content);
+
+        if (cleaned) {
+          results.push(cleaned.split("\n")[0].trim());
+        } else {
+          results.push("생성실패");
+        }
+      }
+    } catch (error) {
+      results.push("생성실패");
     }
 
-    const content = data?.choices?.[0]?.message?.content || "결과가 없습니다.";
-    const cleaned = cleanResult(content);
-
-    resultBox.innerText = cleaned || "조건에 맞는 상품명이 없어 다시 생성해 주세요.";
-  } catch (error) {
-    resultBox.innerText = "실행 오류: " + error.message;
-  }
-}
-
-function copyResult() {
-  const resultText = document.getElementById("result").innerText.trim();
-
-  if (!resultText) {
-    alert("복사할 결과가 없습니다.");
-    return;
+    resultBox.innerText = `생성 중... ${i + 1}/${lines.length}`;
   }
 
-  navigator.clipboard.writeText(resultText)
-    .then(() => {
-      alert("결과를 복사했습니다.");
-    })
-    .catch(() => {
-      alert("복사에 실패했습니다.");
-    });
+  resultBox.innerText = results.join("\n");
 }
 </script>
 
