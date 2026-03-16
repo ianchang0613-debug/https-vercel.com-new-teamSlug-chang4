@@ -174,9 +174,9 @@ ${line}
 
     const data = await response.json();
 
-    if (!response.ok) {
-      return "생성실패";
-    }
+   if (!response.ok) {
+  return "생성실패: " + JSON.stringify(data);
+}
 
     const content = data?.choices?.[0]?.message?.content || "";
     const cleaned = cleanResult(content);
