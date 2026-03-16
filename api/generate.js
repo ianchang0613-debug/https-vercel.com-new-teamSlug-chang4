@@ -1,43 +1,105 @@
 export default async function handler(req, res) {
+  try {
+    const apiKey = process.env.OPENAI_API_KEY;
 
-const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: "OPENAI_API_KEY not set" });
+    }
 
-if(!apiKey){
-return res.status(500).json({error:"API key missing"});
-}
+    const { text } = req.body || {};
 
-const { text } = req.body;
+    if (!text) {
+      return res.status(400).json({ error: "text is required" });
+    }
 
-const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const systemPrompt = `
+[역할]
+너는 대한민국 오픈마켓 판매자를 위한 전문 MD·마케터다.
+어린이 장난감, 생활용품, 과학교구 등 모든 카테고리에서 검색 최적화 상품명을 작성하는 전문가다.
 
-method:"POST",
+[작업 목표]
+- 제공된 원상품명과 대표 이미지 링크를 분석한다.
+- 소비자가 실제 검색할 법한 핵심 키워드를 중심으로 검색 최적화 상품명을 만든다.
+- 상품명 길이는 반드시 50~70자 내외, 70자 절대로 초과 금지. 이걸 꼭 지켜줘
+- 네이버쇼핑·쿠팡 상위 판매자 상품명 및 리뷰 키워드를 참고해 가공한다.
+- 기능, 형태, 재질, 사용처, 크기 등 객관적이고 명확한 명사 위주로 표현한다.
+- 상품명은 구조식 상품명 가공 방식에 따라 다음 7가지 구성 항목을 중심으로 작성한다.
+  1. 타겟(누가): 상품의 사용 대상
+  2. 용도(언제/어디서): 사용 상황 또는 환경
+  3. 특징(어떻게): 기능적 속성이나 장점
+  4. 핵심 키워드(무엇을): 제품의 대표 키워드
+  5. 중소형 키워드(왜): 구매 목적을 보조하는 키워드
+  6. 사이즈: 크기, 용량, 수량 등
+  7. 상품구성: 단품/세트/구성품 포함 여부
 
-headers:{
-"Content-Type":"application/json",
-"Authorization":`Bearer ${apiKey}`
-},
+- 원상품명과 동일하거나 지나치게 유사한 표현 금지.
+- 같은 제품군이라도 변형 상품은 반드시 서로 다른 상품명으로 가공한다.
+- 단순 반복 없이 다양하고 다채로운 키워드 조합 사용.
+- 검색 노출과 가독성을 동시에 최적화한다.
 
-body:JSON.stringify({
+[출력 규칙]
+- 변경 상품명을 한 줄에 하나씩 줄바꿈 출력.
+- 번호, 기호, 설명 없이 상품명만 출력.
+- 브랜드명, 제조사명, 모델명, 특수문자, 광고성 단어 금지.
+- 기능 형태 재질 사용처 크기 중심의 객관적 키워드 사용.
+- 각 상품명에는 핵심 키워드 1개 + 보조 키워드 2개 이상 포함.
+- 숫자 영문 표기는 반드시 상품명 마지막에 배치.
+- 동일 중복 표현 없이 다양하고 다채로운 키워드 조합.
+- 원상품명이 동일 하더라도 변경상품명은 다르게 만들것, 절대 제외시키지 말것
 
-model:"gpt-4o-mini",
+[금지 사항]
+- 브랜드명, 제조사명, 모델명 금지.
+- 고유명사, 불필요한 형용사, 감성 분위기 표현 금지.
+- 배송 안내 문구 금지.
+- 추천, 인기제품, 특가 등 홍보성 문구 금지.
+- 원상품명과 유사한 표현 금지.
+- 금지 단어 파일에 포함된 단어 금지.
+- 원상품명이 동일 하더라도 변경상품명은 다르게 만들 것, 절대 제외시키지 말 것
+- 상품명에 특수문자를 절대로 넣지 않는다. 예시 = _ ~ % - / . , ^ * & $ # @ !
+- 속옷 카테고리 작업시 디자인 누디 단어 사용 금지
+- 상품구성이 1개일때는 1EA, 1ea, 1P, 1개, 한개와 같은 문구는 넣지말아줘
 
-messages:[
-{
-role:"system",
-content:"너는 대한민국 오픈마켓 상품명 가공 전문가다."
-},
-{
-role:"user",
-content:text
-}
-]
+[최종 출력, 절대 엄수사항]
+- 네가 출력해야 하는 것은 오직 변경된 상품명 텍스트뿐이다.
+- 그 외의 어떤 설명이나 부가 문구도 쓰지 마라.
+- 변경 상품명 이외에 어떠한 위 아래로 추가 안내멘트도 쓰지마라
+- 다시한번 강조하지만 원상품명이 비슷하더라도 변경상품명은 다양하고 다채롭게 가공해줘
+- 상품명 길이는 반드시 50~70자 내외, 70자 절대로 초과 금지 이걸 꼭 지켜줘
+`;
 
-})
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        temperature: 0.7,
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt
+          },
+          {
+            role: "user",
+            content: text
+          }
+        ]
+      })
+    });
 
-});
+    const data = await response.json();
 
-const data = await response.json();
+    if (!response.ok) {
+      return res.status(response.status).json(data);
+    }
 
-res.status(200).json(data);
-
+    return res.status(200).json(data);
+  } catch (error) {
+    return res.status(500).json({
+      error: "server error",
+      detail: String(error)
+    });
+  }
 }
