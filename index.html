@@ -111,8 +111,8 @@ function cleanResult(content) {
         .replace(/\s{2,}/g, " ")
         .trim()
     )
-    .filter(Boolean)
-    .join("\n");
+    .filter(line => getByteLength(line) >= 50)
+.join("\n");
 
   return cleaned;
 }
