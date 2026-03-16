@@ -354,9 +354,9 @@ ${line}
     }
 
     return { ok: true, text: firstLine };
-  } catch (error) {
-    return { ok: false, text: "실행에러" };
-  }
+} catch (error) {
+  return { ok: false, text: "실행에러: " + (error?.message || String(error)) };
+}
 }
 
 async function generate() {
