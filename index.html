@@ -48,7 +48,11 @@ button{
 <script>
   
 function getByteLength(str) {
-  return new TextEncoder().encode(str).length;
+  let byte = 0;
+  for (let i = 0; i < str.length; i++) {
+    byte += str.charCodeAt(i) > 127 ? 2 : 1;
+  }
+  return byte;
 }
 
 const bannedWords = [
