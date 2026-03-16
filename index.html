@@ -167,7 +167,7 @@ ${input}
     const content = data?.choices?.[0]?.message?.content || "결과가 없습니다.";
     const cleaned = cleanResult(content);
 
-    resultBox.innerText = cleaned;
+    resultBox.innerText = cleaned || "조건에 맞는 상품명이 없어 다시 생성해 주세요.";
   } catch (error) {
     resultBox.innerText = "실행 오류: " + error.message;
   }
