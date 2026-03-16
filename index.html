@@ -43,48 +43,49 @@ padding:15px;
 <div id="result"></div>
 
 <script>
+async function generate() {
+  const input = document.getElementById("input").value.trim();
+  const resultBox = document.getElementById("result");
 
-async function generate(){
+  if (!input) {
+    resultBox.innerText = "입력값이 없습니다.";
+    return;
+  }
 
-const apiKey = process.env.OPENAI_API_KEY;
+  resultBox.innerText = "생성 중...";
 
-const input = document.getElementById("input").value;
+  const prompt = `
+아래 입력값을 기준으로 상품명을 가공해줘.
 
-const prompt = `
-다음 상품들의 상품명을 가공해줘.
-출력은 상품명만 줄바꿈으로 출력한다.
+입력 형식
+- 각 줄은 원상품명 | 이미지URL 형식이다
+- 입력 순서를 유지해서 결과를 출력한다
+- 출력은 가공된 상품명만 한 줄에 하나씩 줄바꿈으로 출력한다
 
+입력값
 ${input}
 `;
 
-const response = await fetch("/api/generate",{
-method:"POST",
+  try {
+    const response = await fetch("/api/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ text: prompt })
+    });
 
-headers:{
-"Content-Type":"application/json"
-},
+    const data = await response.json();
 
-body:JSON.stringify({
+    if (!response.ok) {
+      resultBox.innerText = "에러: " + JSON.stringify(data);
+      return;
+    }
 
-model:"gpt-4o-mini",
-
-messages:[
-{role:"system",content:"너는 상품명 가공 전문가다"},
-{role:"user",content:prompt}
-]
-
-})
-
-});
-
-const data = await response.json();
-
-document.getElementById("result").innerText =
-data.choices[0].message.content;
-
+    const content = data?.choices?.[0]?.message?.content || "결과가 없습니다.";
+    resultBox.innerText = content;
+  } catch (error) {
+    resultBox.innerText = "실행 오류: " + error.message;
+  }
 }
-
 </script>
-
-</body>
-</html>
