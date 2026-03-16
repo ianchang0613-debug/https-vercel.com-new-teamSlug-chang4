@@ -330,33 +330,43 @@ async function generateSingle(line) {
 ${line}
 `;
 
+try {
+  const response = await fetch("/api/generate", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ text: prompt })
+  });
+
+  const raw = await response.text();
+
+  let data;
   try {
-    const response = await fetch("/api/generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ text: prompt })
-    });
+    data = JSON.parse(raw);
+  } catch (e) {
+    data = raw;
+  }
 
-    const data = await response.json();
+  if (!response.ok) {
+    return { ok: false, text: "API에러: " + (typeof data === "string" ? data : JSON.stringify(data)) };
+  }
 
-   if (!response.ok) {
-  return { ok: false, text: "API에러: " + JSON.stringify(data) };
-}
+  const content =
+    typeof data === "string"
+      ? data
+      : (data?.choices?.[0]?.message?.content || "");
 
-    const content = data?.choices?.[0]?.message?.content || "";
-    const cleaned = cleanResult(content);
-    const firstLine = cleaned.split("\n").map(v => v.trim()).filter(Boolean)[0] || "";
+  const cleaned = cleanResult(content);
+  const firstLine = cleaned.split("\n").map(v => v.trim()).filter(Boolean)[0] || "";
 
-    if (!firstLine) {
-      return { ok: false, text: "생성실패" };
-    }
+  if (!firstLine) {
+    return { ok: false, text: "생성실패" };
+  }
 
-    return { ok: true, text: firstLine };
+  return { ok: true, text: firstLine };
 } catch (error) {
   return { ok: false, text: "실행에러: " + (error?.message || String(error)) };
-}
 }
 
 async function generate() {
