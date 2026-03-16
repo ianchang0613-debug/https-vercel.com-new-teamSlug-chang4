@@ -5,290 +5,127 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>AI 상품명 자동 생성기</title>
 <style>
-  * { box-sizing: border-box; }
-  body {
-    font-family: Arial, sans-serif;
-    max-width: 1080px;
-    margin: 0 auto;
-    padding: 28px;
-    background: #f8fafc;
-    color: #0f172a;
-  }
-  .card {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 18px;
-    padding: 22px;
-    margin-bottom: 18px;
-    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
-  }
-  h1 {
-    margin: 0 0 8px;
-    font-size: 28px;
-  }
-  .sub {
-    margin: 0;
-    color: #475569;
-    line-height: 1.6;
-  }
-  .toolbar, .result-toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 14px;
-  }
-  button {
-    border: 0;
-    border-radius: 12px;
-    padding: 12px 18px;
-    font-size: 15px;
-    cursor: pointer;
-    background: #111827;
-    color: white;
-  }
-  button.secondary {
-    background: #e2e8f0;
-    color: #111827;
-  }
-  button.warn {
-    background: #b91c1c;
-  }
-  button:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-  }
-  textarea {
-    width: 100%;
-    min-height: 240px;
-    resize: vertical;
-    padding: 14px;
-    border-radius: 14px;
-    border: 1px solid #cbd5e1;
-    background: #fff;
-    font-size: 14px;
-    line-height: 1.6;
-  }
-  .helper {
-    margin-top: 10px;
-    color: #64748b;
-    font-size: 13px;
-    line-height: 1.6;
-  }
-  .status {
-    margin-top: 12px;
-    font-size: 14px;
-    color: #334155;
-  }
-  .meta-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 12px;
-    margin-top: 14px;
-  }
-  .meta-box {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    padding: 14px;
-  }
-  .meta-title {
-    font-size: 12px;
-    color: #64748b;
-    margin-bottom: 6px;
-  }
-  .meta-value {
-    font-size: 20px;
-    font-weight: 700;
-  }
-  .result-box {
-    margin-top: 12px;
-    white-space: pre-line;
-    min-height: 260px;
-    border: 1px solid #cbd5e1;
-    border-radius: 14px;
-    padding: 16px;
-    background: #fff;
-    line-height: 1.8;
-  }
-  .footer-note {
-    font-size: 12px;
-    color: #64748b;
-    margin-top: 10px;
-    line-height: 1.6;
-  }
-  @media (max-width: 860px) {
-    .meta-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-  @media (max-width: 560px) {
-    body { padding: 16px; }
-    .meta-grid {
-      grid-template-columns: 1fr;
-    }
-    h1 { font-size: 24px; }
-  }
+body {
+  font-family: Arial, sans-serif;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 28px;
+  background: #f8fafc;
+  color: #0f172a;
+}
+.card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 22px;
+  margin-bottom: 18px;
+}
+h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+}
+.sub {
+  margin: 0;
+  color: #475569;
+  line-height: 1.6;
+}
+textarea {
+  width: 100%;
+  min-height: 220px;
+  resize: vertical;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  font-size: 14px;
+  line-height: 1.6;
+  box-sizing: border-box;
+}
+button {
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-size: 15px;
+  cursor: pointer;
+  background: #111827;
+  color: white;
+  margin-top: 10px;
+  margin-right: 10px;
+}
+button.secondary {
+  background: #e2e8f0;
+  color: #111827;
+}
+button.warn {
+  background: #b91c1c;
+}
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+#result {
+  margin-top: 16px;
+  white-space: pre-line;
+  min-height: 220px;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  padding: 16px;
+  background: #fff;
+  line-height: 1.8;
+}
+.status {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #334155;
+}
+.helper {
+  margin-top: 10px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.meta {
+  margin-top: 12px;
+  color: #475569;
+  font-size: 14px;
+}
 </style>
 </head>
 <body>
 
 <div class="card">
   <h1>AI 상품명 자동 생성기</h1>
-  <p class="sub">원상품명과 이미지URL을 한 줄에 하나씩 입력하면 상품별로 개별 생성합니다. 엑셀 붙여넣기에 맞게 줄바꿈으로 출력됩니다.</p>
+  <p class="sub">원상품명과 이미지URL을 한 줄에 하나씩 입력하면 상품별로 개별 생성합니다.</p>
 </div>
 
 <div class="card">
-  <label for="input"><strong>입력</strong></label>
-  <textarea id="input" placeholder="예시&#10;코코넛 화분 바질 재배 키트 | https://example.com/a.jpg&#10;초등 전기회로 실험 키트 | https://example.com/b.jpg&#10;정리 수납 바구니 손잡이형 | https://example.com/c.jpg"></textarea>
+  <textarea id="input" placeholder="예시&#10;코코넛 화분 바질 재배 키트 | https://example.com/a.jpg&#10;초등 전기회로 실험 키트 | https://example.com/b.jpg"></textarea>
+
   <div class="helper">
     입력 형식: <strong>원상품명 | 이미지URL</strong><br />
     여러 줄 입력 가능 / 엑셀에서 복사 후 그대로 붙여넣기 가능
   </div>
-  <div class="toolbar">
-    <button id="generateBtn" onclick="generate()">상품명 생성</button>
-    <button id="stopBtn" class="warn" onclick="stopGenerate()" disabled>생성 중지</button>
-    <button class="secondary" onclick="clearInput()">입력 초기화</button>
-  </div>
+
+  <button id="generateBtn" onclick="generate()">상품명 생성</button>
+  <button id="stopBtn" class="warn" onclick="stopGenerate()" disabled>생성 중지</button>
+  <button class="secondary" onclick="clearInput()">입력 초기화</button>
+
   <div id="status" class="status">대기중</div>
+  <div id="meta" class="meta">입력 0개 / 완료 0개 / 실패 0개</div>
 </div>
 
 <div class="card">
-  <strong>결과</strong>
-  <div class="meta-grid">
-    <div class="meta-box">
-      <div class="meta-title">입력 상품 수</div>
-      <div id="inputCount" class="meta-value">0</div>
-    </div>
-    <div class="meta-box">
-      <div class="meta-title">생성 완료 수</div>
-      <div id="doneCount" class="meta-value">0</div>
-    </div>
-    <div class="meta-box">
-      <div class="meta-title">실패 수</div>
-      <div id="failCount" class="meta-value">0</div>
-    </div>
-    <div class="meta-box">
-      <div class="meta-title">결과 줄 수</div>
-      <div id="resultCount" class="meta-value">0</div>
-    </div>
-  </div>
-
-  <div id="result" class="result-box">대기중</div>
-
-  <div class="result-toolbar">
-    <button onclick="copyResult()">상품명 전체 복사</button>
-    <button class="secondary" onclick="clearResult()">결과 초기화</button>
-  </div>
-
-  <div class="footer-note">
-    결과는 상품명만 줄바꿈으로 출력됩니다. 복사 후 엑셀에 붙여넣으면 한 줄씩 아래 셀로 들어가도록 설계했습니다.
-  </div>
+  <div id="result">대기중</div>
+  <button onclick="copyResult()">상품명 전체 복사</button>
+  <button class="secondary" onclick="clearResult()">결과 초기화</button>
 </div>
 
 <script>
 let stopFlag = false;
 
-const bannedWords = [
-  "100%","99%","99.9","FDA","FDA인증","HACCP","MAGICBLOCK","가려움완화","가장","간염",
-  "갈증해소","감기","갱년기","건강증진","건선","검버섯","경락","경옥고","경옥보","경옥정",
-  "경옥환","경혈","고농축","고본건양단","고본주","고순도","고혈압","골다공증","공신단","공신원",
-  "공신환","공진단","공진원","공진환","관절","관절염","교수","교정","구찌","구치",
-  "권총","귀룡탕","귀비전","귀비탕","그램","기미","기미제거","꼬부리","냉증","노년기",
-  "노폐물","노화","노화기","노화방지","뇌막염","니스","다이어트","다크서클","다크써클","단검",
-  "담배","당뇨","독소","동상","두통","디스크","땀띠","땅콩기저귀","라이트닝","레이저포인터",
-  "레이져","루이뷔똥","림프액순환","마감임박","마데카솔","마사이","마크제이콥스","매직블럭","매직블록","먹기만하면",
-  "면역","면역력","멸균","무방부제","무색소","무자극","무좀","무첨가물","물레방아","미백",
-  "미세먼지","발기","발리","발모","발저림","버버리","변비","보약","보양","보양식",
-  "보장","보증","보톡스","복용","복통","본드","부작용","부종","부탄가스","불균형",
-  "불면증","붓기","뷰티푸드","브랜드1위","비강확장기","비듬","비비탄총","비염","빈혈","사군자전",
-  "사군자탕","사물탕","사춘기","살균","상처","새가구증후군","새집증후군","생리불순","생리통","샤넬",
-  "설사","성기","성기능","성인병","성장기","세계최초","소화불량","손발저림","손소독","손저림",
-  "숙면","숙변","숙취","습진","시력보호","시린니","시술","신경통","심근경색","십전대보",
-  "쌍화전","쌍화탕","아이백","아토피","알러지","알레르기","암반수","암예방","약사","약재",
-  "약초","약품","양모","어그","어혈","업계1위","여드름","연료","연예","염증",
-  "예방","오늘만특가","오늘만할인","오십견","옥션","온스","완벽","요통","우울증","월드컵",
-  "위염","유기농","유일","육미지황","은교산","은교차","의사","의약","이갈이","이벤트",
-  "인체에무해","인치","인터파크","입냄새","자세교정","잡티제거","장염","재생","재활","접착제",
-  "정력","정력증강","주근깨","주름","주문쇄도","증후군","지마켓","지하수","직수입","질병",
-  "질환","집중력향상","짓무름","처방","척추교정","천식","천연비타민","천연원료","천연화장품","청소슬리퍼",
-  "청패액","청패원","체력보강","체질개선","총명대보","총명전","총명탕","총명환","최고","최대",
-  "최상","최초","추천","출혈","치과의사","치료","치매","치질","치통","캠핑가스",
-  "코곡이","코슈메디컴","콜레스테롤","쾌변","큐어네일","클리닉탄력","탈모","테리","리버치","통증완화",
-  "트러블","트롬","판매1위","편도선","평형","폐필환","폼클레이","프라다","피로회복","피부미용",
-  "피부염","피부질환","피크닉","학습능력향상","한방","한의사","항균","향균","산화","암",
-  "항염","해섭","해썹","혈관","혈액순환","혈행","홍역","환자","황사","흉터",
-  "냉장고바지","벨크로","거꾸로컵","슬라이락","슬라이스락","도깨비방망이","무민인형","아씨방","황실가구","젠가",
-  "합격독서대","노즈워크","킁킁담요","카쓰봉","기절베개","기절토퍼","감성조명","공간조명","LA","지비츠",
-  "누브라","감성텍스","기어엑스","꽃카","다이와","마약베개","탭볼","촘촌망","히트텍","그립톡",
-  "쓸데없는선물","쓸모없는선물","손쉽따개","아이스롤러","아쿠아픽","로스돔","BPF캣타워","블로커스","애플힙","칼린",
-  "CARLYN","파워볼","키젠","꼬꼬핀","로켓배송","행운의네잎클로버","텐셀소재","텐셀","오토반","위네",
-  "효도의자","대두모자"
-];
-
-function getByteLength(str) {
-  let byte = 0;
-  for (let i = 0; i < str.length; i++) {
-    byte += str.charCodeAt(i) > 127 ? 2 : 1;
-  }
-  return byte;
-}
-
-function hasTripleWord(str) {
-  const words = str.split(/\s+/).filter(Boolean);
-  const count = {};
-  for (const word of words) {
-    count[word] = (count[word] || 0) + 1;
-    if (count[word] >= 3) return true;
-  }
-  return false;
-}
-
-function cleanResult(content) {
-  let cleaned = content || "";
-
-  bannedWords.forEach(word => {
-    const escapedWord = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const regex = new RegExp(escapedWord, "gi");
-    cleaned = cleaned.replace(regex, "");
-  });
-
-  cleaned = cleaned
-    .split("\n")
-    .map(line =>
-      line
-        .trim()
-        .replace(/1EA/gi, "")
-        .replace(/1ea/gi, "")
-        .replace(/1P/gi, "")
-        .replace(/1p/gi, "")
-        .replace(/1개/g, "")
-        .replace(/한개/g, "")
-        .replace(/단품/g, "")
-        .replace(/낱개/g, "")
-        .replace(/무료배송/g, "")
-        .replace(/추천/g, "")
-        .replace(/인기/g, "")
-        .replace(/특가/g, "")
-        .replace(/\s{2,}/g, " ")
-        .trim()
-    )
-    .filter(Boolean)
-    .filter(line => !hasTripleWord(line))
-    .join("\n");
-
-  return cleaned;
-}
-
 function setButtons(isGenerating) {
   document.getElementById("generateBtn").disabled = isGenerating;
   document.getElementById("stopBtn").disabled = !isGenerating;
-}
-
-function updateCounters(inputCount, doneCount, failCount, resultCount) {
-  document.getElementById("inputCount").innerText = inputCount;
-  document.getElementById("doneCount").innerText = doneCount;
-  document.getElementById("failCount").innerText = failCount;
-  document.getElementById("resultCount").innerText = resultCount;
 }
 
 function clearInput() {
@@ -298,7 +135,7 @@ function clearInput() {
 function clearResult() {
   document.getElementById("result").innerText = "대기중";
   document.getElementById("status").innerText = "대기중";
-  updateCounters(0, 0, 0, 0);
+  document.getElementById("meta").innerText = "입력 0개 / 완료 0개 / 실패 0개";
 }
 
 function stopGenerate() {
@@ -306,73 +143,75 @@ function stopGenerate() {
   document.getElementById("status").innerText = "중지 요청됨";
 }
 
+function cleanResult(text) {
+  return (text || "")
+    .replace(/1EA/gi, "")
+    .replace(/1ea/gi, "")
+    .replace(/1P/gi, "")
+    .replace(/1p/gi, "")
+    .replace(/1개/g, "")
+    .replace(/한개/g, "")
+    .replace(/단품/g, "")
+    .replace(/낱개/g, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
 async function generateSingle(line) {
   const prompt = `
 아래 입력값 1개에 대해서만 상품명을 가공해줘.
 
-중요 규칙
-- 입력 1개당 출력도 반드시 1개만 한다
-- 상품명만 출력한다
+규칙
+- 입력 1개당 출력도 1개
+- 상품명만 출력
 - 설명문 금지
-- 타겟 키워드를 반드시 포함한다
-- 사용 상황 키워드를 반드시 포함한다
-- 핵심 키워드는 앞쪽에 배치한다
-- 너무 일반적인 상품명이 되지 않게 한다
-- 원상품명 단어를 그대로 재배열하지 않는다
-- 상품명은 엑셀 LENB 기준 50바이트 이상 65바이트 이하를 목표로 한다
-- 50바이트 미만이면 삭제하지 말고 보조 키워드를 추가해서 길이를 맞춘다
-- 65바이트 초과면 삭제하지 말고 의미 약한 표현을 줄여서 길이를 맞춘다
-- 같은 단어는 최대 2번까지만 허용한다
-- 단일 상품일 경우 1EA 1ea 1P 1p 1개 한개 단품 낱개를 절대 넣지 않는다
-- 최종 결과 1개를 반드시 출력한다
+- 타겟 키워드 포함
+- 사용 상황 키워드 포함
+- 너무 일반적이지 않게 작성
+- 단일 상품이면 1EA 1ea 1P 1p 1개 한개 단품 낱개 금지
 
 입력값
 ${line}
 `;
 
-try {
-  const response = await fetch("/api/generate", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ text: prompt })
-  });
-
-  const raw = await response.text();
-
-  let data;
   try {
-    data = JSON.parse(raw);
-  } catch (e) {
-    data = raw;
-  }
+    const response = await fetch("/api/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ text: prompt })
+    });
 
-  if (!response.ok) {
-    return { ok: false, text: "API에러: " + (typeof data === "string" ? data : JSON.stringify(data)) };
-  }
+    const raw = await response.text();
 
-  const content =
-    typeof data === "string"
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch (e) {
+      data = raw;
+    }
+
+    if (!response.ok) {
+      return { ok: false, text: "API에러: " + (typeof data === "string" ? data : JSON.stringify(data)) };
+    }
+
+    const content = typeof data === "string"
       ? data
-      : (data?.choices?.[0]?.message?.content || "");
+      : (data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || "";
 
-  const cleaned = cleanResult(content);
-  const firstLine = cleaned.split("\n").map(v => v.trim()).filter(Boolean)[0] || "";
-
-  if (!firstLine) {
-    return { ok: false, text: "생성실패" };
+    const cleaned = cleanResult(content);
+    return { ok: true, text: cleaned || "생성실패" };
+  } catch (error) {
+    return { ok: false, text: "실행에러: " + (error && error.message ? error.message : String(error)) };
   }
-
-  return { ok: true, text: firstLine };
-} catch (error) {
-  return { ok: false, text: "실행에러: " + (error?.message || String(error)) };
 }
 
 async function generate() {
   const input = document.getElementById("input").value.trim();
   const resultBox = document.getElementById("result");
   const statusBox = document.getElementById("status");
+  const metaBox = document.getElementById("meta");
 
   if (!input) {
     resultBox.innerText = "입력값이 없습니다.";
@@ -382,34 +221,34 @@ async function generate() {
   stopFlag = false;
   setButtons(true);
 
-  const lines = input.split("\n").map(v => v.trim()).filter(Boolean);
+  const lines = input.split("\n").map(function(v) { return v.trim(); }).filter(function(v) { return v; });
   const results = [];
   let doneCount = 0;
   let failCount = 0;
 
-  updateCounters(lines.length, 0, 0, 0);
   resultBox.innerText = "생성 준비중...";
+  metaBox.innerText = "입력 " + lines.length + "개 / 완료 0개 / 실패 0개";
 
   for (let i = 0; i < lines.length; i++) {
     if (stopFlag) {
-      statusBox.innerText = `생성이 중지되었습니다. ${doneCount}/${lines.length} 완료`;
+      statusBox.innerText = "생성이 중지되었습니다.";
       break;
     }
 
-    statusBox.innerText = `생성 중... ${i + 1}/${lines.length}`;
+    statusBox.innerText = "생성 중... " + (i + 1) + "/" + lines.length;
 
     const result = await generateSingle(lines[i]);
     results.push(result.text);
 
-    if (result.ok) doneCount += 1;
-    else failCount += 1;
+    if (result.ok) doneCount++;
+    else failCount++;
 
     resultBox.innerText = results.join("\n");
-    updateCounters(lines.length, doneCount, failCount, results.length);
+    metaBox.innerText = "입력 " + lines.length + "개 / 완료 " + doneCount + "개 / 실패 " + failCount + "개";
   }
 
   if (!stopFlag) {
-    statusBox.innerText = `생성 완료. ${doneCount}/${lines.length} 성공`;
+    statusBox.innerText = "생성 완료";
   }
 
   setButtons(false);
@@ -424,8 +263,12 @@ function copyResult() {
   }
 
   navigator.clipboard.writeText(resultText)
-    .then(() => alert("결과를 복사했습니다."))
-    .catch(() => alert("복사에 실패했습니다."));
+    .then(function() {
+      alert("결과를 복사했습니다.");
+    })
+    .catch(function() {
+      alert("복사에 실패했습니다.");
+    });
 }
 </script>
 
