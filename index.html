@@ -47,6 +47,21 @@ button{
 
 <script>
   
+function hasTripleWord(str) {
+  const words = str.split(/\s+/);
+  const count = {};
+
+  for (let word of words) {
+    count[word] = (count[word] || 0) + 1;
+    if (count[word] >= 3) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
 function getByteLength(str) {
   let byte = 0;
   for (let i = 0; i < str.length; i++) {
@@ -121,9 +136,10 @@ function cleanResult(content) {
         .trim()
    )
   .filter(line => {
-    const byte = getByteLength(line);
-    return byte >= 50 && byte <= 65;
-  })
+  const byte = getByteLength(line);
+  const triple = hasTripleWord(line);
+  return byte >= 50 && byte <= 65 && !triple;
+})
   .join("\n");
 
   return cleaned;
