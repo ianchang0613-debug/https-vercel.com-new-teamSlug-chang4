@@ -38,6 +38,7 @@ button {
 <textarea id="input" placeholder="상품명 | 이미지URL 형식으로 여러 줄 입력"></textarea>
 <br>
 <button onclick="generate()">상품명 생성</button>
+<button onclick="stopGenerate()">생성 중지</button>
 
 <div id="result">대기중</div>
 
@@ -46,6 +47,7 @@ button {
 </div>
 
 <script>
+let stopFlag = false;
 function hasTripleWord(str) {
   const words = str.split(/\s+/).filter(Boolean);
   const count = {};
