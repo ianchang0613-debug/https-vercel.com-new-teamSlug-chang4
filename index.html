@@ -38,9 +38,12 @@ button {
 <textarea id="input" placeholder="상품명 | 이미지URL 형식으로 여러 줄 입력"></textarea>
 <br>
 <button onclick="generate()">상품명 생성</button>
-<button onclick="copyResult()">복사</button>
 
 <div id="result">대기중</div>
+
+<div style="margin-top:10px;">
+  <button onclick="copyResult()">결과 복사</button>
+</div>
 
 <script>
 function hasTripleWord(str) {
